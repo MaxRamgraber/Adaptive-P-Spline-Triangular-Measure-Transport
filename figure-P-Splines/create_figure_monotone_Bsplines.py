@@ -86,7 +86,7 @@ for i in range(n_basis):
     txt = plt.text(
         max_x,
         max_val*c[i] + 0.2,
-        "$c_{"+str(i)+"} = "+str(c[i])+"$",
+        r"$\beta_{"+str(i)+"} = "+str(c[i])+"$",
         ha = "center",
         color = "k")
     
