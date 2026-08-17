@@ -278,6 +278,8 @@ def main(seed):
                 lambdas_initial     = 2 # Later gets overwritten by averaging
                 average_counter     = 0
                 
+                num_adaptation_timesteps = 10
+                
                 # Create an empty dictionary for the degrees of freedom
                 dofs = {}
                 dofs = np.zeros((T,3,4))
@@ -400,6 +402,13 @@ def main(seed):
                     RMSE_list           = []
                     CRPS_list           = []
                     
+                    # Initialize timing lists for one full DA step. One DA step 
+                    # consists of three sequential scalar-observation updates.
+                    duration_DA_step_list = []
+                    duration_DA_step_adaptation_list = []
+                    duration_DA_step_reuse_list = []
+                    adaptation_active_list = []
+                    
                     # Start time measurement for the filtering
                     time_begin  = time.time()
                 
@@ -411,6 +420,10 @@ def main(seed):
                         
                         # Copy the forecast into the analysis matrix
                         Z_a[t,:,:]  = copy.copy(Z_f[t,:,:])
+                        
+                        # Start timing one full DA step
+                        time_DA_step_begin = time.perf_counter()
+                        adaptation_active = t < num_adaptation_timesteps
                     
                         # Assimilate the observations one at a time
                         for idx,perm in enumerate([[0,1,2],[1,0,2],[2,1,0]]):
@@ -433,12 +446,12 @@ def main(seed):
                             if 'transport_map' not in locals() and 'transport_map' not in globals():
                                 transport_map = adaptive_spline_transport(skip_dimensions = 1)
                             
-                            if t < 10:
+                            if t < num_adaptation_timesteps:
                                 optimize_lambdas = True
                                 lmbd_init = 0
                             else:
                                 optimize_lambdas = False
-                                if t == 10:
+                                if t == num_adaptation_timesteps:
                                     lmbd_init = {key: np.median(lambdas[key],axis=0) for key in list(lambdas.keys())}
                             
                             # Extract the lambdas
@@ -489,6 +502,18 @@ def main(seed):
                             # Save the result in the analysis array
                             Z_a[t,...]  = copy.copy(ret)
                             
+                            
+                        # Stop timing one full DA step
+                        duration_DA_step = time.perf_counter() - time_DA_step_begin
+                        
+                        duration_DA_step_list.append(duration_DA_step)
+                        adaptation_active_list.append(adaptation_active)
+                        
+                        if adaptation_active:
+                            duration_DA_step_adaptation_list.append(duration_DA_step)
+                        else:
+                            duration_DA_step_reuse_list.append(duration_DA_step)
+                        
                         # Calculate ensemble mean RMSE
                         RMSE = (np.mean(Z_a[t,...],axis=0) - synthetic_truth[T_spinup+t,:])**2
                         RMSE = np.mean(RMSE)
@@ -561,6 +586,11 @@ def main(seed):
                 output_dictionary['dofs']               = dofs
                 output_dictionary['RMSE_list']          = RMSE_list
                 output_dictionary['duration']           = time_end-time_begin
+                output_dictionary['num_adaptation_timesteps'] = num_adaptation_timesteps
+                output_dictionary['duration_DA_step_list'] = duration_DA_step_list
+                output_dictionary['duration_DA_step_adaptation_list'] = duration_DA_step_adaptation_list
+                output_dictionary['duration_DA_step_reuse_list'] = duration_DA_step_reuse_list
+                output_dictionary['adaptation_active_list'] = adaptation_active_list
                 
                 # Write the result dictionary to a file
                 pickle.dump(output_dictionary,  open(
