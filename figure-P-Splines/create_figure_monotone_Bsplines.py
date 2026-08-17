@@ -103,7 +103,7 @@ plt.gca().set_ylim([0, ylims[1]*1.2])
 xlims = plt.gca().get_xlim()
 plt.gca().set_xlim([xlims[0]-0.5, xlims[1]+0.5])
 
-plt.title(r"$\boldsymbol{A}$: B-spline basis functions with monotonously increasing coefficients",loc="left")
+plt.title(r"$\boldsymbol{A}$: B-spline basis functions with monotonically increasing coefficients",loc="left")
 
 # Now plot the cumulative function
 plt.subplot(gs[2,0])
