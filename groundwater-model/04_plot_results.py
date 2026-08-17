@@ -78,6 +78,8 @@ for col,X in enumerate([X_prior_grid,X_star_grid,X_star_EnKS_grid]):
         bbox_transform=ax.transAxes,
         borderpad=0)
     cbar = plt.colorbar(im, cax = cax)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
     ax = plt.subplot(gs[1,col])
     if col != 1:
@@ -107,6 +109,8 @@ for col,X in enumerate([X_prior_grid,X_star_grid,X_star_EnKS_grid]):
         bbox_transform=ax.transAxes,
         borderpad=0)
     cbar = plt.colorbar(im, cax = cax)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
 ax = plt.subplot(gs[0,3])
 
@@ -130,6 +134,8 @@ cax = inset_axes(
     bbox_transform=ax.transAxes,
     borderpad=0)
 cbar = plt.colorbar(im, cax = cax)
+cbar.ax.yaxis.label.set_size(12)
+cbar.ax.tick_params(labelsize=12)
 
 fig.subplots_adjust(
     left=0.0,
@@ -157,7 +163,7 @@ for idx,N in enumerate(Ns):
     ax.set_yticks([])
     
     plt.title("particle "+str(N))
-    if idx == 0: ax.set_ylabel("EnKS prior")
+    if idx == 0: ax.set_ylabel("EnKS prior", fontsize = 12)
     for r,c in obs_indices:
         ax.scatter(
             c,
@@ -177,6 +183,8 @@ for idx,N in enumerate(Ns):
     if idx == len(Ns)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(im, cax = cax, label = label)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
     
     ax = plt.subplot(gs[1,idx])
@@ -185,7 +193,7 @@ for idx,N in enumerate(Ns):
     ax.set_xticks([])
     ax.set_yticks([])
     
-    if idx == 0: ax.set_ylabel("EnKS posterior")
+    if idx == 0: ax.set_ylabel("EnKS posterior", fontsize = 12)
     for r,c in obs_indices:
         ax.scatter(
             c,
@@ -204,7 +212,8 @@ for idx,N in enumerate(Ns):
     if idx == len(Ns)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(im, cax = cax, label = label)
-    
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
     ax = plt.subplot(gs[2,idx])
     grid = X_star[N,num_obs:][reverse_order].reshape((nrows,ncols))
@@ -212,7 +221,7 @@ for idx,N in enumerate(Ns):
     ax.set_xticks([])
     ax.set_yticks([])
     
-    if idx == 0: ax.set_ylabel("EnTS posterior")
+    if idx == 0: ax.set_ylabel("EnTS posterior", fontsize = 12)
     for r,c in obs_indices:
         ax.scatter(
             c,
@@ -231,6 +240,8 @@ for idx,N in enumerate(Ns):
     if idx == len(Ns)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(im, cax = cax, label = label)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
 fig.subplots_adjust(
     bottom = 0.01,
@@ -296,12 +307,12 @@ for idx,obs_idx in enumerate(obs_indices):
     ax.set_yticks([])
     
     if idx == 0:
-        plt.ylabel("prior"+"\n"+"cell {}".format(focus_cell))
+        plt.ylabel("prior"+"\n"+"cell {}".format(focus_cell), fontsize = 12)
     
     ylims = plt.gca().get_ylim()
     
     
-    norm = mcolors.Normalize(vmin=yrange[0], vmax=yrange[1])       # <── your custom range
+    norm = mcolors.Normalize(vmin=yrange[0], vmax=yrange[1])
     sm   = cm.ScalarMappable(norm=norm, cmap="turbo")
     sm.set_array([])        # required, even if empty, to satisfy .colorbar()
     
@@ -317,8 +328,10 @@ for idx,obs_idx in enumerate(obs_indices):
     if idx == len(obs_indices)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(sm, cax = cax,label=label)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
-    norm2 = mcolors.Normalize(vmin=xrange[0], vmax=xrange[1])       # <── your custom range
+    norm2 = mcolors.Normalize(vmin=xrange[0], vmax=xrange[1])
     sm2   = cm.ScalarMappable(norm=norm2, cmap="turbo")
     sm2.set_array([])        # required, even if empty, to satisfy .colorbar()
     
@@ -331,7 +344,8 @@ for idx,obs_idx in enumerate(obs_indices):
         bbox_transform=ax.transAxes,
         borderpad=0)
     cbar2 = plt.colorbar(sm2, cax = cax2, orientation = "horizontal")
-    
+    cbar2.ax.xaxis.label.set_size(12)
+    cbar2.ax.tick_params(labelsize=12)
 
     
     
@@ -378,7 +392,7 @@ for idx,obs_idx in enumerate(obs_indices):
     ax.set_yticks([])
     
     if idx == 0:
-        plt.ylabel("EnKS"+"\n"+"posterior"+"\n"+"cell {}".format(focus_cell))
+        plt.ylabel("EnKS"+"\n"+"posterior"+"\n"+"cell {}".format(focus_cell), fontsize = 12)
     
     ylims = plt.gca().get_ylim()
     
@@ -398,6 +412,8 @@ for idx,obs_idx in enumerate(obs_indices):
     if idx == len(obs_indices)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(sm, cax = cax,label=label)
+    cbar.ax.yaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
     norm2 = mcolors.Normalize(vmin=xrange[0], vmax=xrange[1])
     sm2   = cm.ScalarMappable(norm=norm2, cmap="turbo")
@@ -413,7 +429,8 @@ for idx,obs_idx in enumerate(obs_indices):
         borderpad=0)
     
     cbar2 = plt.colorbar(sm2, cax = cax2, orientation = "horizontal")
-    
+    cbar2.ax.xaxis.label.set_size(12)
+    cbar2.ax.tick_params(labelsize=12)
 
     
     
@@ -460,7 +477,7 @@ for idx,obs_idx in enumerate(obs_indices):
     ax.set_yticks([])
     
     if idx == 0:
-        plt.ylabel("P-Spline EnTS"+"\n"+"posterior"+"\n"+"cell {}".format(focus_cell))
+        plt.ylabel("P-Spline EnTS"+"\n"+"posterior"+"\n"+"cell {}".format(focus_cell), fontsize = 12)
     
     ylims = plt.gca().get_ylim()
     
@@ -480,6 +497,8 @@ for idx,obs_idx in enumerate(obs_indices):
     if idx == len(obs_indices)-1:
         label = "$\log_{10}K$ [$\log_{10}$ m/s]"
     cbar = plt.colorbar(sm, cax = cax,label=label)
+    cbar.ax.xaxis.label.set_size(12)
+    cbar.ax.tick_params(labelsize=12)
     
     norm2 = mcolors.Normalize(vmin=xrange[0], vmax=xrange[1])
     sm2   = cm.ScalarMappable(norm=norm2, cmap="turbo")
@@ -494,6 +513,8 @@ for idx,obs_idx in enumerate(obs_indices):
         bbox_transform=ax.transAxes,
         borderpad=0)
     cbar2 = plt.colorbar(sm2, cax = cax2, orientation = "horizontal", label = "$\log_{10}K$ [$\log_{10}$ m/s]")
+    cbar2.ax.xaxis.label.set_size(12)
+    cbar2.ax.tick_params(labelsize=12)
     
 fig.subplots_adjust(
     bottom = 0.125,
@@ -506,3 +527,24 @@ fig.subplots_adjust(
     
 plt.savefig("bimodal_marginals_Darcy.png",dpi=300)
 plt.savefig("bimodal_marginals_Darcy.pdf",dpi=300) 
+
+def bound_violation_statistics(X, lower=-7.0, upper=-5.0):
+    violations = (X < lower) | (X > upper)
+
+    violation_fraction = np.mean(violations)
+
+    violation_magnitude = np.mean(
+        np.maximum(lower - X, 0.0)
+        + np.maximum(X - upper, 0.0)
+    )
+
+    return violation_fraction, violation_magnitude
+
+
+v_EnKS, e_EnKS = bound_violation_statistics(X_star_EnKS_grid)
+v_EnTS, e_EnTS = bound_violation_statistics(X_star_grid)
+
+print(f"EnKS: violation fraction = {100*v_EnKS:.1f}%")
+print(f"EnKS: mean violation magnitude = {e_EnKS:.4f}")
+print(f"P-Spline EnTS: violation fraction = {100*v_EnTS:.1f}%")
+print(f"P-Spline EnTS: mean violation magnitude = {e_EnTS:.4f}")

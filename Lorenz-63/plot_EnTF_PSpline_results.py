@@ -31,7 +31,7 @@ marker  = ["","x","+","v","","^"]
 altmarker  = ["","x","*","o","","s"]
 orders          = [[1,1],[2,1],[2,2],[3,1],[3,3],[5,1],[5,5]]
 
-random_seeds = [0,1,2,3,4,5,6,7,9]
+random_seeds = [0,1,2,3,4,5,6,7,8,9]
 
 dct = pickle.load(open("EnTF_results.p","rb"))
 raw_DoFs = pickle.load(open("raw_DoFs.p","rb"))
@@ -53,6 +53,8 @@ for N in Ns:
         res_dct = pickle.load(open("TM_filter_N="+str(N).zfill(4)+"_RS="+str(seed)+".p","rb"))
         
         RMSEs[N].append(np.mean(res_dct["RMSE_list"]))
+        
+        print(f"N={N} RS={seed}: {np.mean(res_dct['RMSE_list'])}")
         
         dofs[N][seed,:,:,:] = copy.copy(res_dct["dofs"])
         
