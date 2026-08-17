@@ -54,8 +54,6 @@ for N in Ns:
         
         RMSEs[N].append(np.mean(res_dct["RMSE_list"]))
         
-        print(f"N={N} RS={seed}: {np.mean(res_dct['RMSE_list'])}")
-        
         dofs[N][seed,:,:,:] = copy.copy(res_dct["dofs"])
         
     RMSEs_quantiles[N] = {

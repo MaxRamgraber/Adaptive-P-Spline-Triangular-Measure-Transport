@@ -42,7 +42,7 @@ def density_wavy_distribution(X):
         x       = X[:,1],
         scale   = 1/6)
     
-    logpdf += scipy.stats.beta.logpdf(locX, a=2, b=2) - np.log(6)
+    logpdf -= np.log(6)
     
     return logpdf
 

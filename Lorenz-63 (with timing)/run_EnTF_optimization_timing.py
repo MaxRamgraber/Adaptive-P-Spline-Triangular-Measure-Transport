@@ -8,7 +8,7 @@ import time
 import pickle
 import argparse
 import traceback
-from PSpline_triangular_transport import adaptive_spline_transport
+from PSpline_triangular_transport_timed import adaptive_spline_transport
 
 def main(seed):
     
@@ -407,6 +407,21 @@ def main(seed):
                     duration_DA_step_list = []
                     duration_DA_step_adaptation_list = []
                     duration_DA_step_reuse_list = []
+                    
+                    # Optimization-only timings. These sum the timings reported
+                    # by transport_map.train_map over the three scalar-observation
+                    # updates in one full DA step. They exclude forward-map
+                    # evaluation, conditional inversion, RMSE/CRPS, plotting,
+                    # logging, forecasting, and cache clearing.
+                    duration_optimization_DA_step_list = []
+                    duration_optimization_DA_step_adaptation_list = []
+                    duration_optimization_DA_step_reuse_list = []
+                    duration_outer_optimization_DA_step_list = []
+                    duration_inner_optimization_DA_step_list = []
+                    duration_diagnostics_DA_step_list = []
+                    duration_train_map_DA_step_list = []
+                    duration_optimization_scalar_list = []
+                    
                     adaptation_active_list = []
                     
                     # Start time measurement for the filtering
@@ -424,6 +439,14 @@ def main(seed):
                         # Start timing one full DA step
                         time_DA_step_begin = time.perf_counter()
                         adaptation_active = t < num_adaptation_timesteps
+                        
+                        # Accumulate optimization/adaptation timings over the
+                        # three scalar-observation updates that form one DA step.
+                        duration_optimization_DA_step = 0.0
+                        duration_outer_optimization_DA_step = 0.0
+                        duration_inner_optimization_DA_step = 0.0
+                        duration_diagnostics_DA_step = 0.0
+                        duration_train_map_DA_step = 0.0
                     
                         # Assimilate the observations one at a time
                         for idx,perm in enumerate([[0,1,2],[1,0,2],[2,1,0]]):
@@ -454,12 +477,32 @@ def main(seed):
                                 if t == num_adaptation_timesteps:
                                     lmbd_init = {key: np.median(lambdas[key],axis=0) for key in list(lambdas.keys())}
                             
-                            # Extract the lambdas
+                            # Train the map. The timed transport-map class
+                            # records optimization/adaptation timings internally
+                            # in transport_map.latest_timing.
                             transport_map.train_map(
                                 X = map_input, 
                                 sparsity = sparsity[1:,:],
                                 lambda_initial = lmbd_init, #0, #lambdas_initial,
                                 optimize_lambdas = optimize_lambdas)
+                            
+                            train_timing = copy.deepcopy(transport_map.latest_timing)
+                            duration_optimization_DA_step += train_timing["optimization_seconds"]
+                            duration_outer_optimization_DA_step += train_timing["outer_optimization_seconds"]
+                            duration_inner_optimization_DA_step += train_timing["inner_optimization_seconds"]
+                            duration_diagnostics_DA_step += train_timing["diagnostics_seconds"]
+                            duration_train_map_DA_step += train_timing["train_map_seconds"]
+                            duration_optimization_scalar_list.append({
+                                "t"                           : int(t),
+                                "observation_index"           : int(idx),
+                                "adaptation_active"           : bool(optimize_lambdas),
+                                "optimization_seconds"        : float(train_timing["optimization_seconds"]),
+                                "outer_optimization_seconds"  : float(train_timing["outer_optimization_seconds"]),
+                                "inner_optimization_seconds"  : float(train_timing["inner_optimization_seconds"]),
+                                "diagnostics_seconds"         : float(train_timing["diagnostics_seconds"]),
+                                "train_map_seconds"           : float(train_timing["train_map_seconds"]),
+                                "component_timings"           : train_timing["component_timings"]
+                            })
                             
                             # Save the effective degrees of freedom
                             dofs[t,idx,:] = copy.deepcopy(transport_map.dofs)
@@ -507,12 +550,19 @@ def main(seed):
                         duration_DA_step = time.perf_counter() - time_DA_step_begin
                         
                         duration_DA_step_list.append(duration_DA_step)
+                        duration_optimization_DA_step_list.append(duration_optimization_DA_step)
+                        duration_outer_optimization_DA_step_list.append(duration_outer_optimization_DA_step)
+                        duration_inner_optimization_DA_step_list.append(duration_inner_optimization_DA_step)
+                        duration_diagnostics_DA_step_list.append(duration_diagnostics_DA_step)
+                        duration_train_map_DA_step_list.append(duration_train_map_DA_step)
                         adaptation_active_list.append(adaptation_active)
                         
                         if adaptation_active:
                             duration_DA_step_adaptation_list.append(duration_DA_step)
+                            duration_optimization_DA_step_adaptation_list.append(duration_optimization_DA_step)
                         else:
                             duration_DA_step_reuse_list.append(duration_DA_step)
+                            duration_optimization_DA_step_reuse_list.append(duration_optimization_DA_step)
                         
                         # Calculate ensemble mean RMSE
                         RMSE = (np.mean(Z_a[t,...],axis=0) - synthetic_truth[T_spinup+t,:])**2
@@ -590,6 +640,23 @@ def main(seed):
                 output_dictionary['duration_DA_step_list'] = duration_DA_step_list
                 output_dictionary['duration_DA_step_adaptation_list'] = duration_DA_step_adaptation_list
                 output_dictionary['duration_DA_step_reuse_list'] = duration_DA_step_reuse_list
+                
+                # Optimization-only timings. These are the quantities most
+                # comparable to the legacy map-optimization timings.
+                output_dictionary['duration_optimization_DA_step_list'] = duration_optimization_DA_step_list
+                output_dictionary['duration_optimization_DA_step_adaptation_list'] = duration_optimization_DA_step_adaptation_list
+                output_dictionary['duration_optimization_DA_step_reuse_list'] = duration_optimization_DA_step_reuse_list
+                output_dictionary['duration_outer_optimization_DA_step_list'] = duration_outer_optimization_DA_step_list
+                output_dictionary['duration_inner_optimization_DA_step_list'] = duration_inner_optimization_DA_step_list
+                output_dictionary['duration_diagnostics_DA_step_list'] = duration_diagnostics_DA_step_list
+                output_dictionary['duration_train_map_DA_step_list'] = duration_train_map_DA_step_list
+                output_dictionary['duration_optimization_scalar_list'] = duration_optimization_scalar_list
+                output_dictionary['optimization_timing_definition'] = (
+                    'Sum over the three scalar-observation updates of outer lambda optimization '
+                    '+ inner coefficient optimization reported by train_map. Excludes forward map, '
+                    'conditional inverse, RMSE/CRPS, plotting, logging, forecasting, and cache clearing. '
+                    'Diagnostics and total train_map timings are stored separately.'
+                )
                 output_dictionary['adaptation_active_list'] = adaptation_active_list
                 
                 # Write the result dictionary to a file
